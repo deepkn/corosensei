@@ -15,6 +15,9 @@ cfg_if::cfg_if! {
     } else if #[cfg(all(feature = "default-stack", windows))] {
         mod windows;
         pub use self::windows::DefaultStack;
+    } else if #[cfg(all(feature = "default-stack-theseus", target_os = "theseus"))] {
+        mod theseus;
+        pub use self::theseus::DefaultStack;
     } else {
         /// Dummy stack for platforms that do not provide a default stack.
         ///

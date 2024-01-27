@@ -17,7 +17,7 @@ cfg-if = "1.0.0"
 scopeguard = { version = "1.1.0", default-features = false }
 
 [target.'cfg(unix)'.dependencies]
-libc = { version = "0.2.119", optional = true }
+libc = { version = "^0.2", default-features = false, optional = true }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.33.0", features = [
@@ -28,6 +28,17 @@ windows-sys = { version = "0.33.0", features = [
     "Win32_System_Threading",
     "Win32_System_SystemInformation",
 ], optional = true }
+
+[target.'cfg(target_os = "theseus")'.dependencies]
+libc = { version = "^0.2", default-features = false, optional = true }
+core2 = { version = "0.4.0", default-features = false, features = ["alloc", "nightly"], optional = true }
+theseus_kernel_config = { path = "../../kernel/kernel_config", package = "kernel_config"}
+
+[patch.crates-io]
+### Patch `libc` so we can use libc-specific types when using `cfg(target_os = "theseus")`.
+libc = { git = "https://github.com/deepkn/libc", branch = "theseus-libc" }
+### Patch `core2` with newer functions from `std::io`, e.g., additional `Seek` trait functions
+core2 = { path = "../../libs/core2" }
 
 [build-dependencies]
 autocfg = "1.1.0"
@@ -44,7 +55,10 @@ criterion-cycles-per-byte = "0.1.2"
 default = ["default-stack", "unwind"]
 
 # Provide a DefaultStack implementation. Requires std.
-default-stack = ["libc", "windows-sys"]
+default-stack = ["libc/std", "windows-sys"]
+
+#Provide a DefaultStack implementation for theseus.
+default-stack-theseus = ["libc", "core2"]
 
 # Support propagating panics from coroutines back up to their callers. This
 # feature also allows coroutines to be safely unwound when they are suspended.
